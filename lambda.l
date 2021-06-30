@@ -21,6 +21,13 @@ extern Expression *rootExpression;
 
 int main() {
   yyparse();
-  rootExpression->print();
-  std::cout << std::endl;
+  /*
+   * If rootExpression is null, we know that 
+   * there was a parser error.
+   */
+  if (rootExpression) {
+    rootExpression->print();
+    std::cout << std::endl;
+  }
+
 }

@@ -10,28 +10,26 @@ class Expression {
   virtual void print() {
     std::cout << "()";
   }
-};
 
-class Ids : public Expression {
-  public:
-  Ids(std::string *id) {
-    mIds.push_back(*id);
+  virtual Expression *reduce() {
+    std::cout << "Reducing." << std::endl;
+    return nullptr;
   }
 
-  void add(std::string *id) {
-    mIds.push_back(*id);
+};
+
+class Id : public Expression {
+  public:
+  Id(std::string *id) {
+    mId = *id;
   }
 
   void print() {
-    std::cout << "(Ids: ";
-    for (auto id : mIds ) {
-      std::cout << id << ", ";
-    }
-    std::cout << ")";
+    std::cout << "(Id: " << mId << ")";
   }
 
   private:
-    std::vector<std::string> mIds;
+    std::string mId;
 };
 
 
@@ -55,19 +53,19 @@ class Application : public Expression {
 
 class Function : public Expression {
   public:
-    Function(Ids *params, Expression *body) :
-      mParams(params),
+    Function(Id *param, Expression *body) :
+      mParam(param),
       mBody(body) {}
     void print() {
       std::cout << "(";
-      std::cout << "Function: params: ";
-      mParams->print();
+      std::cout << "Function: param: ";
+      mParam->print();
       std::cout << ", body: ";
       mBody->print();
       std::cout << ")";
     }
   private:
-    Ids *mParams = nullptr;
+    Id *mParam = nullptr;
     Expression *mBody = nullptr;
 
 };

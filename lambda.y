@@ -6,6 +6,8 @@ Expression *rootExpression = nullptr;
 
 extern int yylex();
 
+extern void yyterminate();
+
 void yyerror(const char *s) { 
   printf("Parse error: %s\n", s);
 }
@@ -14,7 +16,8 @@ void yyerror(const char *s) {
 
 %union {
   Expression *expr;
-  Ids *ids;
+  Application *application;
+  Function *function;
   std::string *id;
   int token;
 }
@@ -26,22 +29,27 @@ void yyerror(const char *s) {
 %token <token> OPENPAREN
 %token <token> CLOSEPAREN
 
-%type <ids> ids
 %type <expr> expression
+%type <application> application
+%type <function> function
 
-%start sexpression
+%start start
 
 %%
 
-sexpression: expression { rootExpression = $1; };
+start      : expression { rootExpression = $1; };
 
-expression : { $$ = new Expression(); }
-           | ids { $$ = $1; }
-           | LAMBDA ids DOT expression { $$ = new Function($2, $4); }
-           | OPENPAREN expression CLOSEPAREN expression { $$ = new Application($2, $4); }
-     ;
+expression : ID { $$ = new Id(yylval.id); }
+           | function { $$ = $1; }
+           | application { $$ = $1; }
+           | OPENPAREN expression CLOSEPAREN { $$ = $2; }
+           ;
 
-ids  : ID { $$ = new Ids($1); }
-     | ids ID { $1->add($2); }
-     ;
+function   : OPENPAREN LAMBDA ID DOT expression CLOSEPAREN 
+             { $$ = new Function(new Id($3), $5); }
+           ;
+
+application: OPENPAREN expression expression CLOSEPAREN
+             { $$ = new Application($2, $3); }
+           ;
 %%

@@ -26,6 +26,7 @@ IF(BISON_FOUND)
     COMMENT "Generating lambdaparser.cpp"
     )
 ENDIF()
+set(CMAKE_CXX_STANDARD 20)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-
-add_executable(lambda ${FlexOutput} ${BisonOutput})
+add_executable(lambda ${FlexOutput} ${BisonOutput} expression.cpp function.cpp application.cpp id.cpp freevariables.cpp)

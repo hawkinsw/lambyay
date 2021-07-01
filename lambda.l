@@ -1,6 +1,7 @@
 %{
 #include <string>
 #include "expression.h"
+#include "freevariables.h"
 #include "lambdaparser.h"
 
 extern "C" int yywrap() { return 1; }
@@ -28,6 +29,7 @@ int main() {
   if (rootExpression) {
     rootExpression->print();
     std::cout << std::endl;
+    std::cout << rootExpression->free() << std::endl;
   }
 
 }

@@ -3,50 +3,43 @@
 #include <iostream>
 #include <vector>
 
+class Expression;
+class Id;
+class FreeVariables;
+
 class Expression {
   public:
-  Expression() { }
+  Expression();
 
-  virtual void print() {
-    std::cout << "()";
-  }
+  virtual void print();
 
-  virtual Expression *reduce() {
-    std::cout << "Reducing." << std::endl;
-    return nullptr;
-  }
+  virtual Expression *reduce();
 
+  virtual FreeVariables free();
 };
 
 class Id : public Expression {
   public:
-  Id(std::string *id) {
-    mId = *id;
-  }
+    Id(std::string *id);
 
-  void print() {
-    std::cout << "(Id: " << mId << ")";
-  }
+    void print() override;
+    FreeVariables free() override;
+
+    bool operator==(const Id &right) {
+      return this->mId == right.mId;
+    }
 
   private:
     std::string mId;
 };
 
-
 class Application : public Expression {
   public:
-    Application(Expression *function, Expression *applicant):
-      mFunction(function),
-      mApplicant(applicant) {}
+    Application(Expression *function, Expression *applicant);
 
-    void print() {
-      std::cout << "(";
-      std::cout << "Application: function: ";
-      mFunction->print();
-      std::cout << ", applicant: ";
-      mApplicant->print();
-      std::cout << ")";
-    }
+    void print() override;
+    FreeVariables free() override;
+
   private:
     Expression *mFunction, *mApplicant;
 };
@@ -55,18 +48,13 @@ class Function : public Expression {
   public:
     Function(Id *param, Expression *body) :
       mParam(param),
-      mBody(body) {}
-    void print() {
-      std::cout << "(";
-      std::cout << "Function: param: ";
-      mParam->print();
-      std::cout << ", body: ";
-      mBody->print();
-      std::cout << ")";
-    }
+      mBody(body) {};
+
+    void print() override;
+    FreeVariables free() override;
+
   private:
     Id *mParam = nullptr;
     Expression *mBody = nullptr;
-
 };
 #endif

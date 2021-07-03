@@ -9,13 +9,23 @@ class FreeVariables;
 
 class Expression {
   public:
-  Expression();
+    Expression();
 
-  virtual void print();
+    virtual void print();
 
-  virtual Expression *reduce();
+    virtual FreeVariables free();
 
-  virtual FreeVariables free();
+    virtual Expression *rename(const Id &from, Expression *to) = 0;
+    virtual Expression *reduce() {
+      return nullptr;
+    };
+    virtual Expression *substitute(Expression *) {
+      return this;
+    }
+
+    virtual Id firstFree();
+
+  private:
 };
 
 class Id : public Expression {
@@ -24,9 +34,14 @@ class Id : public Expression {
 
     void print() override;
     FreeVariables free() override;
+    Expression *rename(const Id &from, Expression *to) override;
 
     bool operator==(const Id &right) {
       return this->mId == right.mId;
+    }
+
+    bool operator<(const Id &operand) const {
+      return this->mId < operand.mId;
     }
 
   private:
@@ -35,10 +50,13 @@ class Id : public Expression {
 
 class Application : public Expression {
   public:
+    Application(Application *application);
     Application(Expression *function, Expression *applicant);
 
     void print() override;
     FreeVariables free() override;
+    Expression *rename(const Id &from, Expression *to) override;
+    Expression *reduce() override;
 
   private:
     Expression *mFunction, *mApplicant;
@@ -52,6 +70,8 @@ class Function : public Expression {
 
     void print() override;
     FreeVariables free() override;
+    Expression *rename(const Id &from, Expression *to) override;
+    Expression *substitute(Expression *substitution) override;
 
   private:
     Id *mParam = nullptr;

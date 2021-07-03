@@ -13,11 +13,10 @@ void Expression::print() {
   std::cout << "()";
 }
 
-Expression *Expression::reduce() {
-  std::cout << "Reducing." << std::endl;
-  return nullptr;
-}
-
 FreeVariables Expression::free() {
   return FreeVariables();
+}
+
+Id Expression::firstFree() {
+  return free().firstFree();
 }

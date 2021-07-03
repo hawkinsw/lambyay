@@ -39,14 +39,14 @@ void yyerror(const char *s) {
 
 start      : expression { rootExpression = $1; };
 
-expression : ID { $$ = new Id(yylval.id); }
+expression : ID { $$ = new Id($1); delete yylval.id;}
            | function { $$ = $1; }
            | application { $$ = $1; }
            | OPENPAREN expression CLOSEPAREN { $$ = $2; }
            ;
 
 function   : OPENPAREN LAMBDA ID DOT expression CLOSEPAREN 
-             { $$ = new Function(new Id($3), $5); }
+             { $$ = new Function(new Id($3), $5); delete $3; }
            ;
 
 application: OPENPAREN expression expression CLOSEPAREN

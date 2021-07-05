@@ -1,5 +1,5 @@
 #include "expression.h"
-#include "freevariables.h"
+#include "ids.h"
 #include <iostream>
 #include <vector>
 
@@ -18,8 +18,12 @@ void Application::print() {
   std::cout << ")";
 }
 
-FreeVariables Application::free() {
+Ids Application::free() {
   return mFunction->free() + mApplicant->free();
+}
+
+Ids Application::bound() {
+  return mFunction->bound() + mApplicant->bound();
 }
 
 Expression *Application::rename(const Id &from, Expression *to) {
@@ -37,6 +41,16 @@ Expression *Application::rename(const Id &from, Expression *to) {
 }
 
 Expression *Application::reduce() {
-  return mFunction->substitute(mApplicant);
+  /*
+   * The reduction of an application is the reduced body of the function
+   * where its parameter is replaced with the reduced applicant.
+   */
+
+  auto reducedFunction = mFunction->reduce();
+  auto reducedApplicant = mApplicant->reduce();
+  return reducedFunction->apply(reducedApplicant);
 }
 
+Expression *Application::copy() {
+  return new Application(mFunction, mApplicant);
+}

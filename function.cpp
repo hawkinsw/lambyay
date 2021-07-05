@@ -1,5 +1,5 @@
 #include "expression.h"
-#include "freevariables.h"
+#include "ids.h"
 #include <iostream>
 #include <vector>
 
@@ -15,8 +15,12 @@ void Function::print() {
   std::cout << ")";
 }
 
-FreeVariables Function::free() {
-  return mBody->free() - FreeVariables(mParam);
+Ids Function::free() {
+  return mBody->free() - Ids(mParam);
+}
+
+Ids Function::bound() {
+  return mBody->bound() + Ids(mParam);
 }
 
 Expression *Function::rename(const Id &from, Expression *to) {
@@ -28,6 +32,10 @@ Expression *Function::rename(const Id &from, Expression *to) {
   return new Function(mParam, mBody);
 }
 
-Expression *Function::substitute(Expression *substitution) {
-  return mBody->rename(*mParam, substitution);
+Expression *Function::copy() {
+  return new Function(mParam, mBody);
+}
+
+Expression *Function::apply(Expression *applicant) {
+  return mBody->rename(*mParam, applicant);
 }

@@ -1,27 +1,40 @@
 #include "expression.h"
-#include "freevariables.h"
+#include "ids.h"
 #include <iostream>
 #include <vector>
+#include <cassert>
 
 /*
  * Id
  */
 Id::Id(std::string *id) {
-  mId = *id;
+  assert(id->length() == 1);
+  mId = (*id)[0];
+}
+
+Id::Id(char id) {
+  mId = id;
 }
 
 void Id::print() {
   std::cout << "(Id: " << mId << ")";
 }
 
-FreeVariables Id::free() {
-  return FreeVariables(this);
+Ids Id::free() {
+  return Ids(this);
+}
+
+Ids Id::bound() {
+  return Ids();
+}
+
+Expression *Id::copy() {
+  return new Id(this->mId);
 }
 
 Expression *Id::rename(const Id &from, Expression *to) {
   if (*this == from) {
-    std::cout << "Renaming!!! " << std::endl;
-    return to;
+    return to->copy();
   }
-  return new Id(&this->mId);
+  return new Id(this->mId);
 }

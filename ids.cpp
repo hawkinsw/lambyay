@@ -12,7 +12,10 @@ Ids::Ids(Id *id) {
 }
 
 Ids &Ids::operator+(const Ids &operand) {
-  mIds.insert(mIds.begin(), operand.mIds.begin(), operand.mIds.end());
+  for (auto id = operand.mIds.begin(); id != operand.mIds.end(); id++) {
+    if (!contains(**id))
+      mIds.push_back(*id);
+  }
   return *this;
 }
 
@@ -22,7 +25,7 @@ Ids &Ids::operator-(const Ids &operand) {
   return *this;
 }
 
-bool Ids::isFree(const Id &toCheck) const {
+bool Ids::contains(const Id &toCheck) const {
   for (auto id : mIds)
     if (*id == toCheck)
       return true;

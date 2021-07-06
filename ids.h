@@ -13,9 +13,17 @@ class Ids {
     Ids &operator+(const Ids &operand);
     Ids &operator-(const Ids &operand);
 
-    bool isFree(const Id &id) const;
+    bool contains(const Id &id) const;
 
     Id firstNotIn();
+
+    auto begin() {
+      return mIds.begin();
+    }
+
+    auto end() {
+      return mIds.end();
+    }
 
     friend std::ostream &operator<<(std::ostream &os, Ids ids);
 

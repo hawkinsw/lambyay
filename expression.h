@@ -26,6 +26,8 @@ class Expression {
      */
     virtual Ids bound() = 0;
 
+    virtual Ids ids() = 0;
+
     /*
      * Returns a pointer to a new expression with _from_ replaced
      * by _to_ only if _from_ is a free variable. 
@@ -54,7 +56,7 @@ class Expression {
      * a pointer to itself.
      */
     virtual Expression *reduce() {
-      return this;
+      return nullptr;
     };
 
     /*
@@ -63,8 +65,12 @@ class Expression {
      * applicable, then simply return a pointer to this expression.
      */
     virtual Expression *apply(Expression *applicant) {
-      return this;
+      return this->copy();
     };
+
+    virtual ~Expression() {}
+
+    virtual bool willReduce() = 0;
 };
 
 class Id : public Expression {
@@ -75,8 +81,10 @@ class Id : public Expression {
     void print() override;
     Ids free() override;
     Ids bound() override;
+    Ids ids() override;
     Expression *rename(const Id &from, Expression *to) override;
     virtual Expression *copy() override;
+    bool willReduce() override { return false; }
 
     bool operator==(const Id &right) {
       return this->mId == right.mId;
@@ -98,6 +106,9 @@ class Id : public Expression {
       return Id(this->mId - decrease);
     }
 
+    ~Id() {
+    }
+
   private:
     char mId;
 };
@@ -110,9 +121,16 @@ class Application : public Expression {
     void print() override;
     Ids free() override;
     Ids bound() override;
+    Ids ids() override;
     Expression *rename(const Id &from, Expression *to) override;
     Expression *reduce() override;
     virtual Expression *copy() override;
+    bool willReduce() override { return true; }
+
+    ~Application() {
+      delete mFunction;
+      delete mApplicant;
+    }
 
   private:
     Expression *mFunction, *mApplicant;
@@ -127,10 +145,17 @@ class Function : public Expression {
     void print() override;
     Ids free() override;
     Ids bound() override;
+    Ids ids() override;
     Expression *rename(const Id &from, Expression *to) override;
     virtual Expression *copy() override;
+    bool willReduce() override { return false; }
 
     Expression *apply(Expression *applicant) override;
+
+    ~Function() {
+      delete mParam;
+      delete mBody;
+    }
 
   private:
     Id *mParam = nullptr;

@@ -28,6 +28,10 @@ Ids Id::bound() {
   return Ids();
 }
 
+Ids Id::ids() {
+  return Ids(this);
+}
+
 Expression *Id::copy() {
   return new Id(this->mId);
 }

@@ -1,8 +1,9 @@
 %{
 #include <string>
 #include "expression.h"
+#include <memory>
 
-Expression *rootExpression = nullptr;
+Expression* parsedExpression = nullptr;
 
 extern int yylex();
 
@@ -37,9 +38,9 @@ void yyerror(const char *s) {
 
 %%
 
-start      : expression { rootExpression = $1; };
+start      : expression { parsedExpression = $1; };
 
-expression : ID { $$ = new Id($1); delete yylval.id;}
+expression : ID { $$ = new Id($1); delete $1;}
            | function { $$ = $1; }
            | application { $$ = $1; }
            | OPENPAREN expression CLOSEPAREN { $$ = $2; }

@@ -23,17 +23,19 @@ Ids Function::bound() {
   return mBody->bound() + Ids(mParam);
 }
 
+Ids Function::ids() {
+  return mBody->ids() + mParam->ids();
+}
+
 Expression *Function::rename(const Id &from, Expression *to) {
-  if (this->free().isFree(from)) {
-    const auto oldBody = mBody;
-    mBody = mBody->rename(from, to);
-    delete oldBody;
+  if (this->free().contains(from)) {
+    return new Function(static_cast<Id*>(mParam->copy()), mBody->rename(from, to));
   }
-  return new Function(mParam, mBody);
+  return new Function(static_cast<Id*>(mParam->copy()), mBody->copy());
 }
 
 Expression *Function::copy() {
-  return new Function(mParam, mBody);
+  return new Function(static_cast<Id*>(mParam->copy()), mBody->copy());
 }
 
 Expression *Function::apply(Expression *applicant) {

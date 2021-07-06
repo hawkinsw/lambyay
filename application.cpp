@@ -2,6 +2,7 @@
 #include "ids.h"
 #include <iostream>
 #include <vector>
+#include <cassert>
 
 /*
  * Application
@@ -26,18 +27,26 @@ Ids Application::bound() {
   return mFunction->bound() + mApplicant->bound();
 }
 
+Ids Application::ids() {
+  return mFunction->ids() + mApplicant->ids();
+}
+
 Expression *Application::rename(const Id &from, Expression *to) {
-  if (mFunction->free().isFree(from)) {
-    const auto oldFunction = mFunction;
-    mFunction = mFunction->rename(from, to);
-    delete oldFunction;
+  Expression *newFunction = nullptr;
+  Expression *newApplicant = nullptr;
+
+  if (mFunction->free().contains(from)) {
+    newFunction = mFunction->rename(from, to);
+  } else {
+    newFunction = mFunction->copy();
   }
-  if (mApplicant->free().isFree(from)) {
-    const auto oldApplicant = mApplicant;
-    mApplicant = mApplicant->rename(from, to);
-    delete oldApplicant;
+
+  if (mApplicant->free().contains(from)) {
+    newApplicant = mApplicant->rename(from, to);
+  } else {
+    newApplicant = mApplicant->copy();
   }
-  return new Application(mFunction, mApplicant);
+  return new Application(newFunction, newApplicant);
 }
 
 Expression *Application::reduce() {
@@ -46,11 +55,41 @@ Expression *Application::reduce() {
    * where its parameter is replaced with the reduced applicant.
    */
 
-  auto reducedFunction = mFunction->reduce();
-  auto reducedApplicant = mApplicant->reduce();
-  return reducedFunction->apply(reducedApplicant);
+  Expression *reducedFunction = nullptr;
+  Expression *reducedApplicant = nullptr;
+
+  if (mFunction->willReduce())
+    reducedFunction = mFunction->reduce();
+  else 
+    reducedFunction = mFunction->copy();
+
+  if (mApplicant->willReduce())
+    reducedApplicant = mApplicant->reduce();
+  else 
+    reducedApplicant = mApplicant->copy();
+
+  auto boundInFunction = reducedFunction->bound();
+  auto idsInFunction = reducedFunction->ids();
+  auto combinedIds = idsInFunction + reducedApplicant->free();
+  auto freeInApplicant = reducedApplicant->free();
+
+  for (auto id = freeInApplicant.begin(); id!=freeInApplicant.end(); id++) {
+    if (reducedFunction->bound().contains(**id)) {
+      auto replacement = combinedIds.firstNotIn();
+      auto oldReducedFunction = reducedFunction;
+      reducedFunction = reducedFunction->rename(**id, &replacement);
+      delete oldReducedFunction;
+    }
+  }
+
+  auto result = reducedFunction->apply(reducedApplicant);
+
+  delete reducedFunction;
+  delete reducedApplicant;
+
+  return result;
 }
 
 Expression *Application::copy() {
-  return new Application(mFunction, mApplicant);
+  return new Application(mFunction->copy(), mApplicant->copy());
 }
